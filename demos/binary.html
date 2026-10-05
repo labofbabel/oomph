@@ -1,0 +1,174 @@
+<!doctype html>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) 2026 Lior Ben-Gai
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Oomph in base 2: drag through an unbounded positive integer and watch its bits.">
+  <title>Oomph · Binary</title>
+  <link rel="stylesheet" href="./demo.css">
+  <style>
+    /* Only the renderer is demo-specific. Everything else is demo.css. */
+    #stage { display: grid; align-content: start; gap: 10px; padding: 16px; }
+    .byte-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .byte { display: flex; gap: 2px; }
+    .bit {
+      width: clamp(11px, 2.1vw, 17px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      font-size: 10px;
+      color: #bbb;
+      background: var(--panel);
+    }
+    .bit.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .overflow { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1><a href="../index.html">Oomph</a> <span>· Binary</span></h1>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="./rgb.html">RGB</a>
+      <a href="./linked-field.html">Linked field</a>
+      <a href="https://github.com/labofbabel/oomph">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="stage"></div>
+
+    <div class="readout">
+      <div><span>bits</span><b id="width">1</b></div>
+      <div><span>decimal</span><b id="dec">0</b></div>
+      <div><span>hex</span><b id="hex">0</b></div>
+    </div>
+
+    <div id="ruler"></div>
+
+    <div class="controls">
+      <label>Bands
+        <input type="number" id="bands" min="1" max="10" value="8">
+      </label>
+      <label>Bits per band
+        <input type="number" id="gap" min="1" max="16" value="4">
+      </label>
+      <label>Reach
+        <input type="text" id="reach" value="" readonly size="12">
+      </label>
+      <button type="button" id="reset">reset to 0</button>
+    </div>
+
+    <p class="note">
+      <code>base: 2</code>, bounded below at <code>0</code> and unbounded above.
+      Each band steps by its own power of two, and <em>bits per band</em> is the
+      <code>exponentGap</code> — at 4, the bands are <code>2^0</code>,
+      <code>2^4</code>, <code>2^8</code> … so eight of them reach 2^28 directly
+      and the value keeps going past that. A fixed-width bit editor would be a
+      job for a plain slider; the point here is that the same instrument works
+      at any width.
+    </p>
+  </main>
+
+  <script type="module">
+    import { Oomph } from '../index.js';
+
+    const MAX_RENDERED_BITS = 512;
+
+    const stage = document.getElementById('stage');
+    const widthOut = document.getElementById('width');
+    const decOut = document.getElementById('dec');
+    const hexOut = document.getElementById('hex');
+    const reachOut = document.getElementById('reach');
+
+    let ruler = null;
+
+    function render() {
+      const bits = ruler.getValueText();           // base 2, no padding, positive
+      const value = ruler.getValue();
+
+      widthOut.textContent = bits.length;
+      decOut.textContent = value.toLocaleString('en-US');
+      hexOut.textContent = value.toString(16);
+
+      stage.textContent = '';
+
+      const shown = bits.length > MAX_RENDERED_BITS ? bits.slice(-MAX_RENDERED_BITS) : bits;
+      // pad the leading group so bytes line up left to right
+      const padded = shown.padStart(Math.ceil(shown.length / 8) * 8, '0');
+
+      const row = document.createElement('div');
+      row.className = 'byte-row';
+      for (let i = 0; i < padded.length; i += 8) {
+        const group = document.createElement('div');
+        group.className = 'byte';
+        for (const ch of padded.slice(i, i + 8)) {
+          const cell = document.createElement('div');
+          cell.className = ch === '1' ? 'bit on' : 'bit';
+          cell.textContent = ch;
+          group.appendChild(cell);
+        }
+        row.appendChild(group);
+      }
+      stage.appendChild(row);
+
+      if (bits.length > MAX_RENDERED_BITS) {
+        const note = document.createElement('div');
+        note.className = 'overflow';
+        note.textContent = `showing the low ${MAX_RENDERED_BITS} of ${bits.length} bits`;
+        stage.appendChild(note);
+      }
+    }
+
+    function build() {
+      const bands = Math.min(10, Math.max(1, Number(document.getElementById('bands').value) || 8));
+      const gap = Math.min(16, Math.max(1, Number(document.getElementById('gap').value) || 4));
+      const carried = ruler ? ruler.getValue() : 0b1011010110110101n;
+
+      if (ruler) ruler.destroy();
+
+      ruler = new Oomph('#ruler', {
+        value: carried,
+        base: 2,
+        exponentGap: gap,
+        rulers: bands,
+        min: 0n,              // negative bits are not a thing worth showing
+        showLabels: true,
+        defer: 'release',
+        layerSize: 26,
+        layerSizeStep: -1,
+        tickGap: 12,
+        style: {
+          backgroundColor: '#ffffff',
+          edgeColor: '#c9c9c9',
+          minorTick: { color: '#b4b4b4', width: 1, height: 45 },
+          midTick: { color: '#8a8a8a', width: 1, height: 72 },
+          majorTick: { color: '#111111', width: 1, height: 100 }
+        }
+      });
+
+      reachOut.value = `2^${(bands - 1) * gap}`;
+      ruler.onInput(render);
+      render();
+    }
+
+    document.getElementById('bands').addEventListener('change', build);
+    document.getElementById('gap').addEventListener('change', build);
+    document.getElementById('reset').addEventListener('click', () => {
+      ruler.setValue(0n, { sync: true });
+      render();
+    });
+
+    build();
+  </script>
+</body>
+</html>

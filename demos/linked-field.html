@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) 2026 Lior Ben-Gai
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Four linked Oomph instances surrounding a shared field.">
+  <title>Oomph · Linked Field Example</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: #222831;
+      background: #d0d4dd;
+      --line: #9aa1a8;
+      --line-soft: #d0d4d8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(34, 40, 49, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(34, 40, 49, 0.035) 1px, transparent 1px),
+        #dfe3e9;
+      background-size: 24px 24px;
+    }
+
+    header,
+    footer {
+      border-block: 1px solid var(--line);
+      background: rgba(238, 244, 247, 0.9);
+    }
+
+    .bar,
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin-inline: auto;
+    }
+
+    .bar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    h1,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font: 700 17px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    p,
+    a,
+    footer {
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    main {
+      padding: 24px 0 36px;
+    }
+
+    .example {
+      border: 1px solid var(--line);
+      background: rgba(238, 243, 247, 0.92);
+    }
+
+    .example-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .example-panel {
+      padding: 14px;
+    }
+
+    .field-frame {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) 64px;
+      grid-template-rows: 64px minmax(250px, 34vw) 64px;
+      gap: 8px;
+      min-height: 470px;
+    }
+
+    .field {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(47, 95, 143, 0.08) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(47, 95, 143, 0.08) 1px, transparent 1px),
+        #f7fbfd;
+      background-size: 20px 20px;
+    }
+
+    .readout {
+      display: grid;
+      gap: 8px;
+      width: min(420px, calc(100% - 32px));
+      padding: 12px;
+      border: 1px solid var(--line-soft);
+      background: rgba(238, 244, 247, 0.8);
+      font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .ruler {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    #rulerTop {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    #rulerRight {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    #rulerBottom {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    #rulerLeft {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    @media (max-width: 620px) {
+      .field-frame {
+        grid-template-columns: 54px minmax(0, 1fr) 54px;
+        grid-template-rows: 54px minmax(240px, 70vw) 54px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <h1>Oomph · linked field</h1>
+      <a href="../index.html">Oomph — home</a> · <a href="./rgb.html">RGB</a> · <a href="./binary.html">Binary</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="example">
+      <div class="example-head">
+        <p>Top and bottom share one BigInt. Left and right share another.</p>
+        <p>Drag any of the four rulers.</p>
+      </div>
+      <div class="example-panel">
+        <div class="field-frame">
+          <div class="ruler" id="rulerTop"></div>
+          <div class="ruler" id="rulerRight"></div>
+          <div class="ruler" id="rulerBottom"></div>
+          <div class="ruler" id="rulerLeft"></div>
+          <div class="field">
+            <div class="readout">
+              <div>horizontal value: <span id="horizontalValue">0</span></div>
+              <div>vertical value: <span id="verticalValue">0</span></div>
+              <div>central field available for a large-scale renderer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="bar">
+      <span>Oomph example</span>
+      <a href="https://github.com/labofbabel/oomph">GitHub</a>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { Oomph } from '../index.js';
+
+    const pairState = {
+      horizontal: { syncing: false, readout: document.getElementById('horizontalValue') },
+      vertical: { syncing: false, readout: document.getElementById('verticalValue') }
+    };
+
+    const style = {
+      edgeColor: '#818891',
+      backgroundColor: '#f9faff',
+      minorTick: { color: '#8b949e', width: 1, height: 45 },
+      midTick: { color: '#2f5f8f', width: 1, height: 70 },
+      majorTick: { color: '#222831', width: 2, height: 100 }
+    };
+
+    const options = (orientation) => ({
+      value: 0n,
+      rulers: 4,
+      base: 10,
+      exponentGap: 1,
+      orientation,
+      unitPosition: 'inside',
+      defer: 10,
+      pixelsPerUnit: 1,
+      tickGap: 10,
+      layerSize: 16,
+      layerSizeStep: 0,
+      showTooltip: true,
+      showLabels: false,
+      style
+    });
+
+    const top = new Oomph('#rulerTop', options('top'));
+    const bottom = new Oomph('#rulerBottom', options('bottom'));
+    const left = new Oomph('#rulerLeft', options('left'));
+    const right = new Oomph('#rulerRight', options('right'));
+
+    function connect(pairName, source, target) {
+      source.onInput((value, meta) => {
+        const state = pairState[pairName];
+        if (state.syncing) return;
+
+        state.syncing = true;
+        state.readout.textContent = value.toString();
+        target.setValue(value, {
+          sync: true,
+          silent: true,
+          sourceLayer: meta.layer
+        });
+        state.syncing = false;
+      });
+    }
+
+    connect('horizontal', top, bottom);
+    connect('horizontal', bottom, top);
+    connect('vertical', left, right);
+    connect('vertical', right, left);
+  </script>
+</body>
+</html>

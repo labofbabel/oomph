@@ -1,0 +1,49 @@
+{
+  "name": "@labofbabel/oomph",
+  "version": "0.1.0",
+  "description": "Orders Of Magnitude — a drag-to-navigate control for numbers far too big for a slider. Exact BigInt, with an experimental Float64 mode.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./index.js": "./index.js",
+    "./oomph.js": "./oomph.js"
+  },
+  "files": [
+    "index.js",
+    "oomph.js"
+  ],
+  "scripts": {
+    "start": "npx --yes serve .",
+    "check": "node --check oomph.js",
+    "test": "node --test",
+    "prepublishOnly": "npm run check && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/labofbabel/oomph.git"
+  },
+  "homepage": "https://labofbabel.github.io/oomph/",
+  "bugs": {
+    "url": "https://github.com/labofbabel/oomph/issues"
+  },
+  "author": "Lior Ben-Gai",
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "bigint",
+    "orders-of-magnitude",
+    "number-input",
+    "ui",
+    "component",
+    "scale",
+    "ruler",
+    "float64"
+  ],
+  "license": "MPL-2.0",
+  "publishConfig": {
+    "access": "public"
+  }
+}

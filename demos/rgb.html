@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) 2026 Lior Ben-Gai
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Oomph in base 16: six hex digits of a 24-bit colour, one band per digit.">
+  <title>Oomph · RGB</title>
+  <link rel="stylesheet" href="./demo.css">
+  <style>
+    #stage { border-color: rgba(0, 0, 0, .16); transition: background-color .12s linear; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <h1><a href="../index.html">Oomph</a> <span>· RGB</span></h1>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="./binary.html">Binary</a>
+      <a href="./linked-field.html">Linked field</a>
+      <a href="https://github.com/labofbabel/oomph">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="stage"></div>
+
+    <div class="readout">
+      <div><span>hex</span><b id="hex">#000000</b></div>
+      <div><span>rgb</span><b id="rgb">0, 0, 0</b></div>
+      <div><span>decimal</span><b id="dec">0</b></div>
+    </div>
+
+    <div id="ruler"></div>
+
+    <p class="note">
+      Six bands, <code>base: 16</code>, one per hex digit of a 24-bit colour.
+      The top band is <code>16^0</code>, the low nibble of blue; the bottom is
+      <code>16^5</code>, the high nibble of red. Because the base sets the tick
+      rhythm as well as the step size, one major tick is exactly one digit —
+      sweep a band through a full major interval and it carries into the next.
+    </p>
+  </main>
+
+  <script type="module">
+    import { Oomph } from '../index.js';
+
+    const stage = document.getElementById('stage');
+    const hexOut = document.getElementById('hex');
+    const rgbOut = document.getElementById('rgb');
+    const decOut = document.getElementById('dec');
+
+    const ruler = new Oomph('#ruler', {
+      value: 0x1E90FFn,
+      base: 16,          // hex steps, hex ticks, hex readout
+      exponentGap: 1,    // one band per digit
+      rulers: 6,         // 16^0 … 16^5 == 24 bits
+      min: 0n,
+      max: 0xFFFFFFn,
+      padTo: 6,          // keep leading zeros so the digits hold their place
+      showLabels: true,
+      defer: 'release',
+      layerSize: 30,
+      layerSizeStep: 0,
+      tickGap: 9,
+      style: {
+        backgroundColor: '#ffffff',
+        edgeColor: '#c9c9c9',
+        minorTick: { color: '#b4b4b4', width: 1, height: 45 },
+        midTick: { color: '#8a8a8a', width: 1, height: 72 },
+        majorTick: { color: '#111111', width: 1, height: 100 }
+      }
+    });
+
+    function paint() {
+      const hex = ruler.getValueText();
+      const n = Number(ruler.getValue());
+
+      stage.style.backgroundColor = `#${hex}`;
+      hexOut.textContent = `#${hex}`;
+      rgbOut.textContent = `${(n >> 16) & 0xFF}, ${(n >> 8) & 0xFF}, ${n & 0xFF}`;
+      decOut.textContent = n.toLocaleString('en-US');
+    }
+
+    ruler.onInput(paint);
+    paint();
+  </script>
+</body>
+</html>
