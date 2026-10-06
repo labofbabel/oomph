@@ -639,13 +639,20 @@ test('float64 text follows the value after step quantisation, not before', () =>
   assert.equal(createDisplayRuler({ value: 255.5, mode: 'float64', displayRadix: 16 }).getValueText(), 'ff.8');
 });
 
-test('tickGapStep widens notch spacing by a fixed number of pixels per band', () => {
+test('tickGapStep changes notch spacing by a fixed number of pixels per band', () => {
   const ruler = Object.create(Oomph.prototype);
   ruler._readOptions({ rulers: 4, tickGap: 10, tickGapStep: 1.5 });
   assert.deepEqual(ruler._tickScales(), [1, 1.15, 1.3, 1.45]);
 
   ruler._readOptions({ tickGapStep: -2 });
-  assert.equal(ruler.tickGapStep, 1.5, 'negative steps are rejected');
+  assert.deepEqual(ruler._tickScales(), [1, 0.8, 0.6, 0.4], 'negative steps tighten coarser bands');
+
+  ruler._readOptions({ tickGapStep: -10 });
+  assert.deepEqual(
+    ruler._tickScales().map((scale) => scale * 10),
+    [10, 7.333333333333334, 4.666666666666667, 2],
+    'past the floor the step relaxes so the last band lands on it'
+  );
 
   ruler._readOptions({ tickGapStep: 0 });
   assert.deepEqual(ruler._tickScales(), [1, 1, 1, 1]);

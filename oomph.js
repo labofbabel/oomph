@@ -356,6 +356,7 @@ const STYLE_ID = 'oomph-default-styles';
 
   // Smallest band we will render. A band thinner than this is not draggable.
   const MIN_BAND_SIZE = 8;
+  const MIN_TICK_GAP = 2;
 
   const ORIENTATIONS = new Set(['top', 'bottom', 'left', 'right']);
   const UNIT_POSITIONS = new Set(['inside', 'outside']);
@@ -404,9 +405,9 @@ const STYLE_ID = 'oomph-default-styles';
     return clampNumber(Math.round(number), min, max);
   }
 
-  function normalizeNonNegativeNumber(value, fallback, max) {
+  function normalizeNumber(value, fallback, min, max) {
     const number = Number(value);
-    return Number.isFinite(number) && number >= 0 ? Math.min(number, max) : fallback;
+    return Number.isFinite(number) ? clampNumber(number, min, max) : fallback;
   }
 
   function normalizePositiveNumber(value, fallback) {
@@ -926,7 +927,7 @@ const STYLE_ID = 'oomph-default-styles';
       this.defer = hasOwn(options, 'defer') ? options.defer : (this.defer ?? DEFAULTS.defer);
       this.pixelsPerUnit = normalizePositiveNumber(options.pixelsPerUnit, this.pixelsPerUnit ?? DEFAULTS.pixelsPerUnit);
       this.tickGap = normalizePositiveNumber(options.tickGap ?? options.minTick, this.tickGap ?? DEFAULTS.tickGap);
-      this.tickGapStep = normalizeNonNegativeNumber(options.tickGapStep, this.tickGapStep ?? DEFAULTS.tickGapStep, 100);
+      this.tickGapStep = normalizeNumber(options.tickGapStep, this.tickGapStep ?? DEFAULTS.tickGapStep, -100, 100);
       // Tick rhythm follows the base unless the caller pins it. `this.*Raw`
       // keeps the caller's intent ('auto' or a number) so a later setBase()
       // re-derives instead of freezing the first base's numbers.
@@ -1073,12 +1074,23 @@ const STYLE_ID = 'oomph-default-styles';
     // notches `tickGap + n * tickGapStep` apart, and everything else on that
     // band — mid, major and cycle spacing, and how far the pattern moves per
     // unit — scales by the same factor, so a band stays an exact view of the
-    // value; it is only drawn larger. Offsets are kept in unscaled space and
-    // multiplied out at render time.
+    // value; it is only drawn larger or smaller. Offsets are kept in unscaled
+    // space and multiplied out at render time.
+    //
+    // A negative step follows the same rule as the band-size cascade: if the
+    // last band would fall under the floor, the step is relaxed so the spread
+    // stays evenly spaced and lands exactly on the floor.
     _tickScales() {
+      const count = this.rulerCount;
+      let step = this.tickGapStep || 0;
+      const floor = Math.min(MIN_TICK_GAP, this.tickGap);
+
+      if (count > 1 && this.tickGap + ((count - 1) * step) < floor) {
+        step = (floor - this.tickGap) / (count - 1);
+      }
+
       const scales = [];
-      const step = this.tickGapStep || 0;
-      for (let layer = 0; layer < this.rulerCount; layer += 1) {
+      for (let layer = 0; layer < count; layer += 1) {
         scales.push(step === 0 ? 1 : (this.tickGap + (layer * step)) / this.tickGap);
       }
       return scales;

@@ -52,7 +52,7 @@ exponentGap: 3` gives bands of 1, 10³, 10⁶ and so on.
 | `defer` | `100` | `onChange` debounce in ms, or `'release'`. |
 | `pixelsPerUnit` | `1` | Pointer travel per unit. |
 | `tickGap` | `10` | Pixels between minor ticks. |
-| `tickGapStep` | `0` | Extra pixels between notches for each band up the stack. Band `n` is drawn with notches `tickGap + n * tickGapStep` apart. Takes `0 … 100` and accepts fractions. |
+| `tickGapStep` | `0` | Extra pixels between notches for each band up the stack. Band `n` is drawn with notches `tickGap + n * tickGapStep` apart. Takes `-100 … 100` and accepts fractions. A negative step makes coarser bands denser and stops at 2px, the way `layerSizeStep` does. |
 | `midTickEvery`, `majorTickEvery`, `visualCycleEvery` | `'auto'` | Tick rhythm in multiples of `tickGap`. With `'auto'`, the rhythm comes from `base`. |
 | `layerSize` | `32` | Thickness of the first band in px, `8 … 120`. |
 | `layerSizeStep` | `-4` | Change in thickness for each band, `-20 … 20`. |
@@ -63,7 +63,7 @@ exponentGap: 3` gives bands of 1, 10³, 10⁶ and so on.
 | `style` | `null` | See [Styling](#styling). |
 | `injectStyles` | `true` | Set to `false` to supply all CSS yourself. |
 
-A band with a wider `tickGapStep` only looks bigger. It still steps by its own
+A band scaled by `tickGapStep` only looks bigger or smaller. It still steps by its own
 power, and its notches stay under the pointer while you drag.
 
 ## API
