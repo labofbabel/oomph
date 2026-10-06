@@ -9,3 +9,5 @@ pnpm-debug.log*
 # local tooling / editor
 .claude/
 .vscode/
+
+dist/

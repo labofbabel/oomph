@@ -14,7 +14,9 @@ npm install @labofbabel/oomph
 ```
 
 To vendor it instead, copy `oomph.js` into your project. It is a single
-self-contained file, and `index.js` only re-exports it.
+self-contained file, and `index.js` only re-exports it. A minified copy ships in
+the npm package as `@labofbabel/oomph/oomph.min.js`, and `npm run build` creates
+it at `dist/oomph.min.js`.
 
 ## Usage
 
@@ -118,6 +120,7 @@ You can also set CSS custom properties on the container: `--oomph-bg`,
 
 ```sh
 npm test
+npm run build   # writes dist/oomph.min.js
 npm start   # serves the workbench (index.html) and demos/
 ```
 

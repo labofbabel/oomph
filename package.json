@@ -7,17 +7,20 @@
   "exports": {
     ".": "./index.js",
     "./index.js": "./index.js",
-    "./oomph.js": "./oomph.js"
+    "./oomph.js": "./oomph.js",
+    "./oomph.min.js": "./dist/oomph.min.js"
   },
   "files": [
     "index.js",
-    "oomph.js"
+    "oomph.js",
+    "dist/"
   ],
   "scripts": {
     "start": "npx --yes serve .",
     "check": "node --check oomph.js",
     "test": "node --test",
-    "prepublishOnly": "npm run check && npm test"
+    "prepublishOnly": "npm run check && npm test && npm run build",
+    "build": "esbuild oomph.js --minify --format=esm --outfile=dist/oomph.min.js --banner:js='/*! Oomph | MPL-2.0 | https://mozilla.org/MPL/2.0/ | (c) 2026 Lior Ben-Gai */'"
   },
   "repository": {
     "type": "git",
@@ -45,5 +48,8 @@
   "license": "MPL-2.0",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }
