@@ -1,6 +1,6 @@
 {
   "name": "@labofbabel/oomph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Orders Of Magnitude — a drag-to-navigate control for numbers far too big for a slider. Exact BigInt, with an experimental Float64 mode.",
   "type": "module",
   "main": "./index.js",
